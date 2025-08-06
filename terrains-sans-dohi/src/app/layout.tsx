@@ -1,10 +1,8 @@
-
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./components/nav-bar";
-import Footer from "./components/footer";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,35 +26,33 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="flex flex-col min-h-screen">
-      {/* Navbar */}
-      <header>
-        <NavBar/>
-      </header>
+          {/* Navbar */}
+          <header>
+            <NavBar />
+          </header>
 
-      {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+          {/* Main Content */}
+          <main className="flex-1">
+            {children}
+          </main>
 
-      {/* Footer sticks to bottom */}
-      <footer className="bg-gray-900 text-gray-300 py-8">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-left">
-            <h3 className="text-white text-xl font-bold mb-2">Terrains100Dohi</h3>
-            <p className="text-sm">&copy; {new Date().getFullYear()} Tous droits réservés</p>
-          </div>
-          <nav className="flex space-x-6 text-sm">
-            <a href="#" className="hover:text-white">Accueil</a>
-            <a href="#" className="hover:text-white">À propos</a>
-            <a href="#" className="hover:text-white">Contact</a>
-          </nav>
+          {/* Footer sticks to bottom and is distinct */}
+          <footer className="bg-gray-900 text-gray-300 py-8 border-t border-gray-700 shadow-inner">
+            <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="text-center md:text-left">
+                <h3 className="text-white text-xl font-bold mb-2">Terrains100Dohi</h3>
+                <p className="text-sm">&copy; {new Date().getFullYear()} Tous droits réservés</p>
+              </div>
+              <nav className="flex space-x-6 text-sm">
+                <a href="#" className="hover:text-white">Accueil</a>
+                <a href="#" className="hover:text-white">À propos</a>
+                <a href="#" className="hover:text-white">Contact</a>
+              </nav>
+            </div>
+          </footer>
         </div>
-      </footer>
-    </div>
       </body>
     </html>
   );
