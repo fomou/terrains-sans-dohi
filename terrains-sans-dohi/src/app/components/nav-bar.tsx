@@ -1,12 +1,13 @@
-
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useUser } from "@/contexts/user-context";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const userContext = useUser(); // Assuming useUser is a custom hook to access user context
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -39,6 +40,11 @@ export default function NavBar() {
               </Link>
             </li>
             <li>
+              <Link href="/browse" className="hover:underline text-[var(--foreground)] transition-colors">
+                Parcourir
+              </Link>
+            </li>
+            <li>
               <Link href="/catalogue" className="hover:underline text-[var(--foreground)] transition-colors">
                 Catalogue
               </Link>
@@ -49,122 +55,138 @@ export default function NavBar() {
               </Link>
             </li>
           </ul>
+          {!userContext?.isLoggedIn && (
+            <div className="flex items-center space-x-4">
+              {/* TODO : No user context, always show login/signup  */}
+              <div className="hidden md:flex items-center space-x-3">
+                <Link
+                  href="/login"
+                  className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Se connecter
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  S&apos;inscrire
+                </Link>
+              </div>
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="md:hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-1"
+                aria-expanded={menuOpen}
+                aria-label="Toggle menu"
+              >
+                {menuOpen ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                  </svg>
+                )}
+              </button>
+            </div>)}
 
-          <div className="flex items-center space-x-4">
-            {/* User Profile Dropdown */}
+          {userContext?.isLoggedIn && (
             <div className="relative" ref={dropdownRef}>
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-1"
                 aria-expanded={profileOpen}
-                aria-haspopup="true"
+                aria-label="Toggle profile menu"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12 2a5 5 0 100 10 5 5 0 000-10zm-7 18a7 7 0 0114 0H5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    profileOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-700">
+                  {userContext.user?.firstName ? userContext.user.firstName.charAt(0).toUpperCase() : "U"}{userContext.user?.lastName ? userContext.user.lastName.charAt(0).toUpperCase() : "U"}
+                </div>
+                <span className="hidden md:block text-[var(--foreground)]">{userContext.user?.firstName || "User"}</span>
+                <svg className="w-4 h-4 text-[var(--foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-
-              {/* Dropdown Menu */}
               {profileOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
-                  <div className="py-1">
-                    <Link
-                      href="/login"
-                      className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                        </svg>
-                        <span>Se connecter</span>
-                      </div>
-                    </Link>
-                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                    <Link
-                      href="/signup"
-                      className="block px-4 py-3 text-sm text-white bg-red-500 hover:bg-red-600 transition-colors"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      <div className="flex items-center space-x-2 justify-center">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                        </svg>
-                        <span>S&apos inscrire</span>
-                      </div>
-                    </Link>
-                  </div>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg transition-colors"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    Mon Profil
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    Paramètres
+                  </Link>
+                  <button
+                    onClick={() => {
+                      userContext.logout();
+                      setProfileOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg transition-colors"
+                  >
+                    Se déconnecter
+                  </button>
                 </div>
               )}
-            </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-1"
-              aria-expanded={menuOpen}
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
-              )}
-            </button>
-          </div>
+            </div>)}
+
+          {/* Mobile Menu */}
+          {menuOpen && (
+            <div className="md:hidden mt-4 pb-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col space-y-2 pt-4">
+                <Link
+                  href="/"
+                  className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Accueil
+                </Link>
+                <Link
+                  href="/browse"
+                  className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Parcourir
+                </Link>
+                <Link
+                  href="/catalogue"
+                  className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Catalogue
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Contact
+                </Link>
+                <Link
+                  href="/login"
+                  className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Se connecter
+                </Link>
+                <Link
+                  href="/signup"
+                  className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  S&apos;inscrire
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col space-y-2 pt-4">
-              <Link
-                href="/"
-                className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                onClick={() => setMenuOpen(false)}
-              >
-                Accueil
-              </Link>
-              <Link
-                href="/catalogue"
-                className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                onClick={() => setMenuOpen(false)}
-              >
-                Catalogue
-              </Link>
-              <Link
-                href="/contact"
-                className="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                onClick={() => setMenuOpen(false)}
-              >
-                Contact
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );

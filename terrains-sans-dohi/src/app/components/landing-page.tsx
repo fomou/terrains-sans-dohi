@@ -22,10 +22,10 @@ export default function LandingPage() {
             <div className="space-y-8">
               <div>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                  Find Your Perfect Land Investment
+                  Trouvez le terrain idéal pour investir
                 </h1>
                 <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-lg">
-                  Discover verified land properties across the country. From rural retreats to commercial opportunities.
+                  Découvrez des terrains vérifiés partout dans le pays. Des retraites rurales aux opportunités commerciales.
                 </p>
               </div>
 
@@ -48,19 +48,32 @@ export default function LandingPage() {
                 </button>
               </form>
 
+              {/* Browse All Properties Button */}
+              <div className="flex justify-center">
+                <a
+                  href="/browse"
+                  className="inline-flex items-center px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900"
+                >
+                  Parcourir tous les terrains
+                  <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </a>
+              </div>
+
               {/* Features List */}
               <div className="flex flex-col sm:flex-row gap-6 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Verified Properties</span>
+                  <span>Propriétés vérifiées</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Secure Transactions</span>
+                  <span>Transactions sécurisées</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Expert Support</span>
+                  <span>Support d&apos;experts</span>
                 </div>
               </div>
             </div>
@@ -75,7 +88,7 @@ export default function LandingPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <p className="text-sm">Hero Image - Land Landscape</p>
+                    <p className="text-sm">Image principale - Paysage de terrain</p>
                   </div>
                 </div>
               </div>
@@ -89,10 +102,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Why Choose LandMarket
+              Pourquoi choisir Terrains100Dohi
             </h2>
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-              We make land buying and selling simple, secure, and transparent.
+              Nous simplifions l&apos;achat et la vente de terrains : simple, sécurisé et transparent.
             </p>
           </div>
 
@@ -104,9 +117,9 @@ export default function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-4">Advanced Search</h3>
+              <h3 className="text-xl font-semibold mb-4">Recherche avancée</h3>
               <p className="text-gray-300">
-                Find exactly what you&aposre looking for with our powerful filtering system.
+                Trouvez exactement ce que vous recherchez grâce à notre système de filtres puissant.
               </p>
             </div>
 
@@ -117,9 +130,9 @@ export default function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-4">Verified Listings</h3>
+              <h3 className="text-xl font-semibold mb-4">Annonces vérifiées</h3>
               <p className="text-gray-300">
-                All properties are thoroughly verified for authenticity and legal compliance.
+                Toutes les propriétés sont rigoureusement vérifiées pour leur authenticité et leur conformité légale.
               </p>
             </div>
 
@@ -130,9 +143,9 @@ export default function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-4">Expert Support</h3>
+              <h3 className="text-xl font-semibold mb-4">Support d&apos;experts</h3>
               <p className="text-gray-300">
-                Get guidance from our team of land investment professionals.
+                Bénéficiez des conseils de notre équipe de professionnels de l&apos;investissement foncier.
               </p>
             </div>
           </div>

@@ -1,10 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Link from "next/link";
+import { useUser } from "@/contexts/user-context";
 
 export default function LoginPage() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    if (error) setError("");
+  };
+
+   const userContext = useUser()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const success = await userContext.login(formData.email, formData.password);
+      if (success) {
+        window.location.href = "/";
+      } else {
+        setError("Email ou mot de passe incorrect");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Une erreur s'est produite. Veuillez réessayer.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -12,23 +50,23 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 bg-gray-900 text-white flex flex-col justify-center items-center p-6 md:p-12">
         <div className="max-w-md text-center">
           <div className="bg-white text-black font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg mb-6 md:mb-8 inline-block">
-            LandMarket
+            Terrains100Dohi
           </div>
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 leading-tight">
-            Find Your Perfect Land<br />Investment
+            Trouvez votre terrain<br />parfait
           </h1>
           <p className="text-gray-300 mb-8 md:mb-12 text-base md:text-lg leading-relaxed">
-            Join thousands of investors who trust LandMarket for
-            verified land properties and secure transactions.
+            Rejoignez des milliers d&apos;investisseurs qui font confiance à Terrains100Dohi pour des transactions sécurisées et des propriétés vérifiées.
           </p>
+
           <div className="flex justify-center space-x-6 md:space-x-12">
             <div className="text-center">
               <p className="text-xl md:text-2xl lg:text-3xl font-bold text-white">10K+</p>
-              <p className="text-gray-400 text-xs md:text-sm mt-1">Properties</p>
+              <p className="text-gray-400 text-xs md:text-sm mt-1">Proprietés</p>
             </div>
             <div className="text-center">
               <p className="text-xl md:text-2xl lg:text-3xl font-bold text-white">5K+</p>
-              <p className="text-gray-400 text-xs md:text-sm mt-1">Investors</p>
+              <p className="text-gray-400 text-xs md:text-sm mt-1">Investisseurs</p>
             </div>
             <div className="text-center">
               <p className="text-xl md:text-2xl lg:text-3xl font-bold text-white">99%</p>
@@ -41,21 +79,31 @@ export default function LoginPage() {
       {/* Right Section */}
       <div className="w-full lg:w-1/2 bg-gray-900 text-white flex flex-col justify-center px-6 md:px-12 lg:px-16">
         <div className="max-w-md mx-auto w-full">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">Welcome Back</h2>
-          <p className="text-gray-400 mb-6 md:mb-8">Sign in to your account to continue</p>
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">Bienvenue</h2>
+          
+          <p className="text-gray-400 mb-6 md:mb-8">Connectez-vous à votre compte pour continuer</p>
 
-          <form className="space-y-4 md:space-y-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-900 border border-red-700 rounded-lg text-red-200 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email Address
+                Adresse e-mail
               </label>
               <div className="relative">
                 <input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Entrez votre adresse e-mail"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                  required
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,19 +116,23 @@ export default function LoginPage() {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
+                Mot de passe
               </label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="Entrez votre mot de passe"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                  required
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 >
                   {showPassword ? (
                     <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +141,7 @@ export default function LoginPage() {
                   ) : (
                     <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   )}
                 </button>
@@ -102,24 +154,25 @@ export default function LoginPage() {
                   type="checkbox" 
                   className="w-4 h-4 text-white bg-gray-800 border-gray-600 rounded focus:ring-white focus:ring-2"
                 />
-                <span className="text-gray-300">Remember me</span>
+                <span className="text-gray-300">Se rappeler de moi</span>
               </label>
               <Link href="#" className="text-sm text-gray-400 hover:text-white">
-                Forgot password?
+                Mot de passe oublié ?
               </Link>
             </div>
 
             <button 
               type="submit"
-              className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              disabled={isSubmitting}
+              className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isSubmitting ? "Connexion en cours..." : "Se connecter"}
             </button>
           </form>
 
           <div className="flex items-center my-6">
             <hr className="flex-1 border-gray-700" />
-            <span className="mx-4 text-gray-500 text-sm">Or continue with</span>
+            <span className="mx-4 text-gray-500 text-sm">Ou connectez-vous avec</span>
             <hr className="flex-1 border-gray-700" />
           </div>
 
@@ -142,9 +195,9 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-gray-400 text-sm">
-            Don&apos;t have an account?{" "}
+            Vous n&apos;avez pas de compte?{" "}
             <Link href="/signup" className="text-white hover:underline font-medium">
-              Sign up
+              S&apos;inscrire
             </Link>
           </p>
         </div>

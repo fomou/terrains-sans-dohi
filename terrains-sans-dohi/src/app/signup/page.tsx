@@ -1,20 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
+// import { useUser } from "@/contexts/UserContext"; // Removed
+import { UserRole } from "@/types/user";
+import { useUser } from "@/contexts/user-context";
 
 export default function SignupPage() {
+  // const { register } = useUser(); // Removed
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    role: "BUYER" as UserRole,
+    phone: "",
+    company: "",
+    licenseNumber: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const userContext = useUser()
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -45,6 +55,20 @@ export default function SignupPage() {
       newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
     }
 
+    // Role-specific validation
+    if (formData.role === 'SELLER' && !formData.company.trim()) {
+      newErrors.company = "Le nom de l'entreprise est requis pour les vendeurs";
+    }
+
+    if (formData.role === 'NOTARY') {
+      if (!formData.company.trim()) {
+        newErrors.company = "Le nom de l'entreprise est requis pour les notaires";
+      }
+      if (!formData.licenseNumber.trim()) {
+        newErrors.licenseNumber = "Le numéro de licence est requis pour les notaires";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -64,6 +88,9 @@ export default function SignupPage() {
     }
   };
 
+  // Dummy register function for now
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -72,13 +99,44 @@ export default function SignupPage() {
     setIsSubmitting(true);
     
     try {
-      // TODO: Implement actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      alert(`Inscription réussie pour: ${formData.firstName} ${formData.lastName}`);
+      const success = await userContext.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        phone: formData.phone || undefined,
+        company: formData.company || undefined,
+        licenseNumber: formData.licenseNumber || undefined
+      });
+
+      if (success) {
+        // Redirect based on role
+        const redirectPath = formData.role === 'BUYER' ? '/browse' : 
+                           formData.role === 'SELLER' ? '/seller/dashboard' : 
+                           '/notary/dashboard';
+        window.location.href = redirectPath;
+      } else {
+        alert("Erreur lors de l'inscription. Veuillez réessayer.");
+      }
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
+      alert("Erreur lors de l'inscription. Veuillez réessayer.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const getRoleDescription = (role: UserRole) => {
+    switch (role) {
+      case 'BUYER':
+        return "Parcourez et achetez des terrains vérifiés";
+      case 'SELLER':
+        return "Vendez vos terrains avec vérification notariale";
+      case 'NOTARY':
+        return "Fournissez des services de vérification notariale";
+      default:
+        return "";
     }
   };
 
@@ -97,10 +155,11 @@ export default function SignupPage() {
             Créez votre compte et accédez à des milliers de terrains 
             vérifiés avec des transactions sécurisées.
           </p>
+
           <div className="flex justify-center space-x-6 md:space-x-12">
             <div className="text-center">
               <p className="text-xl md:text-2xl lg:text-3xl font-bold text-white">10K+</p>
-              <p className="text-gray-400 text-xs md:text-sm mt-1">Propriétés</p>
+              <p className="text-gray-400 text-xs md:text-sm mt-1">Proprietés</p>
             </div>
             <div className="text-center">
               <p className="text-xl md:text-2xl lg:text-3xl font-bold text-white">5K+</p>
@@ -114,14 +173,61 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Right Section - Signup Form */}
+      {/* Right Section - Form */}
       <div className="w-full lg:w-1/2 bg-gray-900 text-white flex flex-col justify-center px-6 md:px-12 lg:px-16">
         <div className="max-w-md mx-auto w-full">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Créer un compte</h2>
-          <p className="text-gray-400 mb-6 md:mb-8">Commencez votre parcours d&aposinvestissement</p>
+          <p className="text-gray-400 mb-6 md:mb-8">Commencez votre parcours d&apos;investissement</p>
 
           <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-            {/* Name Fields */}
+            {/* Role Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-3">
+                Type de compte
+              </label>
+              <div className="grid grid-cols-1 gap-3">
+                {(['BUYER', 'SELLER', 'NOTARY'] as UserRole[]).map((role) => (
+                  <label
+                    key={role}
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                      formData.role === role
+                        ? 'border-blue-500 bg-blue-900 bg-opacity-20'
+                        : 'border-gray-700 hover:border-gray-600'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={role}
+                      checked={formData.role === role}
+                      onChange={(e) => handleInputChange("role", e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                        formData.role === role
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-600'
+                      }`}>
+                        {formData.role === role && (
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium capitalize">
+                          {role === 'BUYER' ? 'Acheteur' : role === 'SELLER' ? 'Vendeur' : 'Notaire'}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {getRoleDescription(role)}
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Champs Prénom/Nom */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">
@@ -179,7 +285,7 @@ export default function SignupPage() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Adresse Email
+                Adresse e-mail
               </label>
               <div className="relative">
                 <input
@@ -203,7 +309,87 @@ export default function SignupPage() {
               {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
             </div>
 
-            {/* Password */}
+            {/* Phone */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                Téléphone (optionnel)
+              </label>
+              <div className="relative">
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="+1 (555) 123-4567"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition-colors"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Company (for sellers and notaries) */}
+            {(formData.role === 'SELLER' || formData.role === 'NOTARY') && (
+              <div>
+                <label htmlFor="company" className="block text-sm font-medium text-gray-300 mb-2">
+                  Nom de l'entreprise {formData.role === 'NOTARY' ? '*' : '*'}
+                </label>
+                <div className="relative">
+                  <input
+                    id="company"
+                    type="text"
+                    placeholder={formData.role === 'SELLER' ? "Nom de votre entreprise" : "Nom de votre cabinet"}
+                    value={formData.company}
+                    onChange={(e) => handleInputChange("company", e.target.value)}
+                    className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors ${
+                      errors.company 
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+                        : "border-gray-700 focus:border-gray-500 focus:ring-gray-500"
+                    }`}
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.company && <p className="text-red-400 text-xs mt-1">{errors.company}</p>}
+              </div>
+            )}
+
+            {/* License Number (for notaries) */}
+            {formData.role === 'NOTARY' && (
+              <div>
+                <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-300 mb-2">
+                  Numéro de licence notariale *
+                </label>
+                <div className="relative">
+                  <input
+                    id="licenseNumber"
+                    type="text"
+                    placeholder="Numéro de licence"
+                    value={formData.licenseNumber}
+                    onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
+                    className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors ${
+                      errors.licenseNumber 
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+                        : "border-gray-700 focus:border-gray-500 focus:ring-gray-500"
+                    }`}
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.licenseNumber && <p className="text-red-400 text-xs mt-1">{errors.licenseNumber}</p>}
+              </div>
+            )}
+
+            {/* Mot de passe */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 Mot de passe
@@ -241,7 +427,7 @@ export default function SignupPage() {
               {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
             </div>
 
-            {/* Confirm Password */}
+            {/* Confirmer le mot de passe */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                 Confirmer le mot de passe
