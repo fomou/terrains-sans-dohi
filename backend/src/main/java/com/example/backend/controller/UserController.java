@@ -4,6 +4,7 @@ import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.UserDTO;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.security.SecurityConfiguration;
 import com.example.backend.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -32,13 +35,21 @@ import java.util.Map;
 public class UserController {
 
     @Autowired
-    private  AuthenticationManager authenticationManager;
+    private  SecurityConfiguration securityConfiguration;
 
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
     @Autowired
     private  UserRepository userRepository;
 
     @Autowired
     private  PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private  SecurityConfiguration securityConfig;
+
+
 
     @Autowired
     private UserService userService;
@@ -68,7 +79,12 @@ public class UserController {
                                                                     .setExpiration(new Date(System.currentTimeMillis()+3600_000))
                                                                             .signWith(SignatureAlgorithm.HS256,key).compact();
 
-            res.put("token", token);
+
+                                                                            res.put("token", token);
+
+            UsernamePasswordAuthenticationToken autheToken = new UsernamePasswordAuthenticationToken(userDetails.email, userDetails.password);
+            authenticationManager.authenticate(autheToken);
+            SecurityContextHolder.getContext().setAuthentication(autheToken);
             return ResponseEntity.ok(res);
         } catch (AuthenticationException e){
             Map<String, String> res = new HashMap<>();
@@ -79,7 +95,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> register(@RequestBody UserDTO userDTO){
+    public ResponseEntity<Map<String, String>> register(@RequestBody UserDTO userDTO) {
 
 
         System.out.println("endpoint hit");
@@ -92,7 +108,7 @@ public class UserController {
             Map<String, String> res = new HashMap<>();
 
 
-            String dummy_key =  "ma-cle-secrete-tres-longue-et-tres-securisee-1234";
+            String dummy_key = "ma-cle-secrete-tres-longue-et-tres-securisee-1234";
             Key key = new SecretKeySpec(dummy_key.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
             userService.registerUser(userDTO);
             UserDTO newuserDto = userService.loadUserByUserEmail(userDTO.email);
@@ -110,13 +126,19 @@ public class UserController {
                     .compact();
             res.put("token", token);
             res.put("message", "User registered successfully");
-
+            UsernamePasswordAuthenticationToken autheToken = new UsernamePasswordAuthenticationToken(newuserDto.email, userDTO.password);
+            authenticationManager.authenticate(autheToken);
+            SecurityContextHolder.getContext().setAuthentication(autheToken);
             return ResponseEntity.ok(res);
-        }catch (Exception e){
+        } catch (Exception e) {
             Map<String, String> res = new HashMap<>();
             res.put("message", e.getMessage());
             return ResponseEntity.status(401).body(res);
         }
+    }
+        @GetMapping("/protected")
+        public String protectedEndpoint() {
+            return "Protected endpoint accessed by";
 
     }
 }

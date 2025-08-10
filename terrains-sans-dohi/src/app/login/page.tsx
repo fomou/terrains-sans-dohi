@@ -31,10 +31,13 @@ export default function LoginPage() {
 
     try {
       const success = await userContext.login(formData.email, formData.password);
-      if (success) {
+      const res = await userContext.testProtectedEndpoint();
+      if (success && res) {
         window.location.href = "/";
-      } else {
-        setError("Email ou mot de passe incorrect");
+      } else if(!success) {
+        setError("Email ou mot de passe incorrect");}
+      else {
+        setError("Une erreur s'est produite. Veuillez réessayer.");
       }
     } catch (error) {
       console.error("Login error:", error);

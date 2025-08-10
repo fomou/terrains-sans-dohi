@@ -27,6 +27,9 @@ public class VerificationRequest {
     @Column(columnDefinition = "jsonb")
     private String documents; // JSON array of documents
 
+    @Column(columnDefinition = "jsonb")
+    private String pictures;
+
     private String notes;
     private LocalDateTime completedAt;
     private LocalDateTime createdAt;

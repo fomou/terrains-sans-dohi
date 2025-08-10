@@ -19,4 +19,5 @@ public class PropertyDTO {
     public Integer notaryId;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
+    public String pictures;
 }

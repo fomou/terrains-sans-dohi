@@ -37,4 +37,9 @@ public class PropertyController {
     public void delete(@PathVariable String id) {
         propertyService.delete(id);
     }
+
+    @GetMapping("/health")
+    public String healthCheck(){
+        return "propertie endpoint: ok";
+    }
 }

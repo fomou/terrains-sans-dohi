@@ -9,6 +9,7 @@ interface UserContextType {
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     register: (userData: RegisterData) => Promise<boolean>;
+    testProtectedEndpoint: () => Promise<boolean>;
     isLoading: boolean;
     isLoggedIn: boolean;
 }
@@ -102,6 +103,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 return false; // Handle error response
             }
 
+            
+
             const { token } = await response.json();
             localStorage.setItem('token', token);
             const newUser: User = jwtDecode<User>(token);
@@ -119,8 +122,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const testProtectedEndpoint = async() =>{
+        try {
+            const response = await fetch("http://localhost:8080/api/protected", {
+                method: 'GET',
+                headers:{"Authorization": `Bearer ${localStorage.getItem("token")}`}
+            });
+            if (!response.ok) {
+                console.error('Protected endpoint error:', response.statusText);
+                return false; // Handle error response
+            }
+
+            setIsLoggedIn(true);
+            return true;
+        }catch (error) {
+            console.error('Protected endpoint error:', error);
+            setIsLoggedIn(false);
+            return false;
+            }
+    }
+
     return (
-        <UserContext.Provider value={{ user, login, logout, register, isLoading, isLoggedIn }}>
+        <UserContext.Provider value={{ user, login, logout, register, testProtectedEndpoint, isLoading, isLoggedIn }}>
             {children}
         </UserContext.Provider>
     );

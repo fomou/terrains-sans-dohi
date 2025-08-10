@@ -1,6 +1,7 @@
 package com.example.backend.security;
 
 
+import com.example.backend.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -22,17 +23,19 @@ public class JwtFiler extends OncePerRequestFilter {
 
 
 
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
 
         if(header != null && header.startsWith("Bearer ") ){
-            String key = System.getenv("JWT_SECRET_KEY");
+            String key =  "ma-cle-secrete-tres-longue-et-tres-securisee-1234";;
 
             try{
                 String token = header.substring(7);
                 Claims clain = Jwts.parser()
-                        .setSigningKey(System.getenv("JWT_SECRET_KEY"))
+                        .setSigningKey(key)
                         .parseClaimsJwt(token)
                         .getBody();
 
@@ -42,6 +45,7 @@ public class JwtFiler extends OncePerRequestFilter {
                 request.setAttribute("role", clain.get("role"));
 
             }catch(JwtException e){
+                System.out.println(e.toString());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 return;
             }

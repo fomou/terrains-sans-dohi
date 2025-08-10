@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Table(name = "properties")
 public class Property {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String title;
     private String description;
@@ -15,13 +16,15 @@ public class Property {
     private Double acres;
     private String location;
     private String city;
-    private String state;
-    private String zipCode;
+  
+   
     private String landType;
     private String status; // active, pending, sold, etc.
     private String verificationStatus; // pending, verified, rejected
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Column(columnDefinition = "jsonb")
+    private String pictures;
 
 
     @ManyToOne
@@ -32,6 +35,7 @@ public class Property {
     @JoinColumn(name = "notary_id")
     private User notary;
 
+    
     public String getId() {
         return id;
     }
@@ -96,21 +100,7 @@ public class Property {
         this.city = city;
     }
 
-    public String getState() {
-        return state;
-    }
 
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
-    }
 
     public String getLandType() {
         return landType;
@@ -158,5 +148,11 @@ public class Property {
 
     public void setNotary(User notary) {
         this.notary = notary;
+    }
+    public String getPictures() {
+        return pictures;
+    }
+    public void setPictures(String pictures) {
+        this.pictures = pictures;
     }
 }

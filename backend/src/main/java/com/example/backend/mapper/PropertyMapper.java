@@ -17,8 +17,6 @@ public class PropertyMapper {
         dto.acres = property.getAcres();
         dto.location = property.getLocation();
         dto.city = property.getCity();
-        dto.state = property.getState();
-        dto.zipCode = property.getZipCode();
         dto.landType = property.getLandType();
         dto.status = property.getStatus();
         dto.verificationStatus = property.getVerificationStatus();
@@ -38,8 +36,6 @@ public class PropertyMapper {
         property.setAcres(dto.acres);
         property.setLocation(dto.location);
         property.setCity(dto.city);
-        property.setState(dto.state);
-        property.setZipCode(dto.zipCode);
         property.setLandType(dto.landType);
         property.setStatus(dto.status);
         property.setVerificationStatus(dto.verificationStatus);

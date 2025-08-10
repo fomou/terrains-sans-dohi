@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Locale;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
     @Autowired
     UserRepository userRepository;
@@ -25,7 +25,7 @@ public class UserService implements UserDetailsService {
     UserMapper userMapper;
 
     @Autowired
-    public PasswordEncoder pwdEncoder;
+    private PasswordEncoder pwdEncoder;
 
     public UserDTO registerUser(UserDTO userDTO) throws Exception {
 
@@ -34,18 +34,6 @@ public class UserService implements UserDetailsService {
         user.setRole(user.getRole().toUpperCase(Locale.ROOT));
 
         return userMapper.toDto(userRepository.save(user));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                Collections.singleton(new SimpleGrantedAuthority(user.getRole()))
-        );
     }
 
     public UserDTO loadUserByUserEmail(String email) throws UsernameNotFoundException{
