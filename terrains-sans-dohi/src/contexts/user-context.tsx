@@ -9,7 +9,6 @@ interface UserContextType {
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     register: (userData: RegisterData) => Promise<boolean>;
-    testProtectedEndpoint: () => Promise<boolean>;
     isLoading: boolean;
     isLoggedIn: boolean;
 }
@@ -37,7 +36,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const savedToken = localStorage.getItem('token');
         if (savedToken) {
             try {
-                const userData: User = jwtDecode<User>(savedToken);
+                const userData: User = jwtDecode(savedToken).user;
                 setUser(userData);
                 setIsLoggedIn(true);
             } catch (error) {
@@ -52,7 +51,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             // Simulate API call
-            const respons = await fetch("http://localhost:8080/api/login", {
+            const respons = await fetch("http://localhost:8280/auth/login", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -66,8 +65,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
 
             const { token } = await respons.json();
+            console.log('Login successful, token:', token);
             localStorage.setItem('token', token);
-            const userData: User = jwtDecode<User>(token);
+            const userData: User = jwtDecode(token).user;
+            console.log('Decoded user data:', userData);
             setUser(userData);
             setIsLoggedIn(true);
 
@@ -91,7 +92,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             // Simulate API call
-            const response = await fetch("http://localhost:8080/api/signup", {
+            const response = await fetch("http://localhost:8280/auth/signup", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -107,7 +108,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
             const { token } = await response.json();
             localStorage.setItem('token', token);
-            const newUser: User = jwtDecode<User>(token);
+            const newUser: User = jwtDecode(token).user;
             setUser(newUser);
             setIsLoggedIn(true);
             setIsLoggedIn(true);
@@ -122,28 +123,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const testProtectedEndpoint = async() =>{
-        try {
-            const response = await fetch("http://localhost:8080/api/protected", {
-                method: 'GET',
-                headers:{"Authorization": `Bearer ${localStorage.getItem("token")}`}
-            });
-            if (!response.ok) {
-                console.error('Protected endpoint error:', response.statusText);
-                return false; // Handle error response
-            }
-
-            setIsLoggedIn(true);
-            return true;
-        }catch (error) {
-            console.error('Protected endpoint error:', error);
-            setIsLoggedIn(false);
-            return false;
-            }
-    }
 
     return (
-        <UserContext.Provider value={{ user, login, logout, register, testProtectedEndpoint, isLoading, isLoggedIn }}>
+        <UserContext.Provider value={{ user, login, logout, register, isLoading, isLoggedIn }}>
             {children}
         </UserContext.Provider>
     );

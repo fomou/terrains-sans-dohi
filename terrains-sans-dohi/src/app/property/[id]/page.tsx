@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useUser } from '@/contexts/user-context';
+import { MoveLeft } from 'lucide-react';
+//import { useProperty } from '@/contexts/property-context';
+
 
 interface PropertyDetails {
   id: number;
@@ -99,6 +103,8 @@ export default function PropertyDetailPage({ params }: { params: { id: string } 
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const [isSaved, setIsSaved] = useState(false);
+  const userContext = useUser();
+  //const propertyContext = useProperty();
 
   const formatPrice = (price: number) => {
     if (price >= 1000000) {

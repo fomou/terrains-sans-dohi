@@ -31,14 +31,14 @@ export default function LoginPage() {
 
     try {
       const success = await userContext.login(formData.email, formData.password);
-      const res = await userContext.testProtectedEndpoint();
-      if (success && res) {
+      
+      if (success ) {
+        console.log(userContext.user);
         window.location.href = "/";
-      } else if(!success) {
-        setError("Email ou mot de passe incorrect");}
-      else {
-        setError("Une erreur s'est produite. Veuillez réessayer.");
+      } else  {
+        setError("Email ou mot de passe incorrect");
       }
+
     } catch (error) {
       console.error("Login error:", error);
       setError("Une erreur s'est produite. Veuillez réessayer.");

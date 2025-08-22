@@ -66,6 +66,7 @@ export interface Property {
   notaryId?: string;
   createdAt: Date;
   updatedAt: Date;
+   // URLs of images
 }
 
 export interface VerificationRequest {

@@ -1,105 +1,43 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Property } from '@/types/user';
 
-interface LandListing {
-  id: number;
-  price: number;
-  status: 'Verified' | 'Pending' | 'Not Verified';
-  acres: number;
-  landType: string;
-  location: string;
-  city: string;
-  state: string;
-  zipCode: string;
+interface VerificationStatus {
+  verified: boolean;
+  pending: boolean;
+  notVerified: boolean;
 }
-
-const mockListings: LandListing[] = [
-  {
-    id: 1,
-    price: 85000,
-    status: 'Verified',
-    acres: 2.5,
-    landType: 'Rural Land',
-    location: 'Austin',
-    city: 'Austin',
-    state: 'TX',
-    zipCode: '78701'
-  },
-  {
-    id: 2,
-    price: 120000,
-    status: 'Pending',
-    acres: 4.2,
-    landType: 'Agricultural',
-    location: 'Dallas',
-    city: 'Dallas',
-    state: 'TX',
-    zipCode: '75201'
-  },
-  {
-    id: 3,
-    price: 67500,
-    status: 'Not Verified',
-    acres: 1.8,
-    landType: 'Residential',
-    location: 'Houston',
-    city: 'Houston',
-    state: 'TX',
-    zipCode: '77001'
-  },
-  {
-    id: 4,
-    price: 95000,
-    status: 'Verified',
-    acres: 3.1,
-    landType: 'Commercial',
-    location: 'San Antonio',
-    city: 'San Antonio',
-    state: 'TX',
-    zipCode: '78201'
-  },
-  {
-    id: 5,
-    price: 150000,
-    status: 'Pending',
-    acres: 5.5,
-    landType: 'Agricultural',
-    location: 'Fort Worth',
-    city: 'Fort Worth',
-    state: 'TX',
-    zipCode: '76101'
-  },
-  {
-    id: 6,
-    price: 75000,
-    status: 'Verified',
-    acres: 2.0,
-    landType: 'Residential',
-    location: 'El Paso',
-    city: 'El Paso',
-    state: 'TX',
-    zipCode: '79901'
-  }
-];
-
-const mapPins = [
-  { id: 1, label: 'Pin 1 - $85,000', price: 85000, position: 'top-left' },
-  { id: 2, label: 'Pin 2 - $120,000', price: 120000, position: 'top-right' },
-  { id: 3, label: 'Pin 3 - $67,500', price: 67500, position: 'bottom-center' }
-];
 
 export default function BrowsePage() {
   const [priceRange, setPriceRange] = useState([0, 500000]);
   const [surfaceRange, setSurfaceRange] = useState([0, 50]);
-  const [verificationStatus, setVerificationStatus] = useState({
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>({
     verified: false,
     pending: false,
     notVerified: false
   });
   const [location, setLocation] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [listings, setListings] = useState<Property[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => { 
+    async function fetchListings() {
+      try {
+        const response = await fetch('http://localhost:8280/api/properties');
+        const data = await response.json();
+        setListings(data);
+      } catch (error) {
+        console.error('Error fetching listings:', error);
+        setListings([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchListings();
+  }, []);
 
   const formatPrice = (price: number) => {
     if (price >= 1000000) {
@@ -107,7 +45,7 @@ export default function BrowsePage() {
     } else if (price >= 1000) {
       return `$${(price / 1000).toFixed(0)}k`;
     }
-    return `$${price}`;
+    return `$${price.toLocaleString()}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -123,13 +61,24 @@ export default function BrowsePage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading properties...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile Header */}
       <div className="lg:hidden bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">LandMarket</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">TerrainsSansDohi</h1>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
@@ -151,6 +100,8 @@ export default function BrowsePage() {
               </div>
               <input
                 type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 placeholder="Search by location, city, or postal code..."
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -163,7 +114,6 @@ export default function BrowsePage() {
       <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">LandMarket</h1>
             </div>
@@ -178,6 +128,8 @@ export default function BrowsePage() {
                 </div>
                 <input
                   type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   placeholder="Search by location, city, or postal code..."
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -273,27 +225,13 @@ export default function BrowsePage() {
                   </svg>
                   <p className="text-gray-600 dark:text-gray-400 font-medium text-sm sm:text-base">Interactive Map View</p>
                 </div>
-                
-                {/* Map Pins */}
-                {mapPins.map((pin) => (
-                  <div
-                    key={pin.id}
-                    className={`absolute ${pin.position === 'top-left' ? 'top-4 left-4 sm:top-8 sm:left-8' : 
-                                   pin.position === 'top-right' ? 'top-4 right-4 sm:top-8 sm:right-8' : 
-                                   'bottom-4 left-1/2 transform -translate-x-1/2 sm:bottom-8'}`}
-                  >
-                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-lg">
-                      {pin.label}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
 
             {/* Results Header */}
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                {mockListings.length} Properties Found
+                {listings.length} Properties Found
               </h2>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Sort by:</span>
@@ -308,17 +246,25 @@ export default function BrowsePage() {
 
             {/* Land Listings Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {mockListings.map((listing) => (
+              {listings.map((listing) => (
                 <div key={listing.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
-                  {/* Land Photo Placeholder */}
-                  <div className="h-40 sm:h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <div className="text-center">
-                      <svg className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Land Photo</p>
+                  {/* Land Photo */}
+                  {listing.images && listing.images.length > 0 ? (
+                    <img
+                      src={`http://localhost:8280${listing.images[0]}`}
+                      alt={`Property ${listing.id}`}
+                      className="w-full h-40 sm:h-48 object-cover"
+                    />
+                  ) : (
+                    <div className="h-40 sm:h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <div className="text-center">
+                        <svg className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">No Image</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Listing Details */}
                   <div className="p-3 sm:p-4">
@@ -337,20 +283,33 @@ export default function BrowsePage() {
                       {listing.city}, {listing.state} {listing.zipCode}
                     </p>
                     
-                                         <Link href={`/property/${listing.id}`} className="block w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm sm:text-base text-center">
-                       View Details
-                     </Link>
+                    <Link href={`/property/${listing.id}`} className="block w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm sm:text-base text-center">
+                      View Details
+                    </Link>
                   </div>
                 </div>
               ))}
             </div>
 
+            {/* Empty State */}
+            {listings.length === 0 && (
+              <div className="text-center py-12">
+                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No properties found</h3>
+                <p className="text-gray-500 dark:text-gray-400">Try adjusting your search criteria or filters.</p>
+              </div>
+            )}
+
             {/* Load More Button */}
-            <div className="mt-6 sm:mt-8 text-center">
-              <button className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
-                Load More Properties
-              </button>
-            </div>
+            {listings.length > 0 && (
+              <div className="mt-6 sm:mt-8 text-center">
+                <button className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                  Load More Properties
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -358,7 +317,7 @@ export default function BrowsePage() {
   );
 }
 
-// Separate component for filters content to avoid duplication
+// Filters Component
 function FiltersContent({
   location,
   setLocation,
@@ -375,8 +334,8 @@ function FiltersContent({
   setPriceRange: (value: number[]) => void;
   surfaceRange: number[];
   setSurfaceRange: (value: number[]) => void;
-  verificationStatus: { verified: boolean; pending: boolean; notVerified: boolean };
-  setVerificationStatus: (value: { verified: boolean; pending: boolean; notVerified: boolean }) => void;
+  verificationStatus: VerificationStatus;
+  setVerificationStatus: (value: VerificationStatus) => void;
 }) {
   return (
     <>
@@ -447,10 +406,10 @@ function FiltersContent({
               <input
                 type="checkbox"
                 checked={checked}
-                                 onChange={(e) => setVerificationStatus({
-                   ...verificationStatus,
-                   [key]: e.target.checked
-                 })}
+                onChange={(e) => setVerificationStatus({
+                  ...verificationStatus,
+                  [key]: e.target.checked
+                })}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
               />
               <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">
@@ -467,4 +426,4 @@ function FiltersContent({
       </button>
     </>
   );
-} 
+}

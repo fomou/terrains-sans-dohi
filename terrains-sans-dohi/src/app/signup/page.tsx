@@ -111,6 +111,7 @@ export default function SignupPage() {
       });
 
       if (success) {
+        console.log(userContext.user);
         // Redirect based on role
         const redirectPath = formData.role === 'BUYER' ? '/browse' : 
                            formData.role === 'SELLER' ? '/seller/dashboard' : 
