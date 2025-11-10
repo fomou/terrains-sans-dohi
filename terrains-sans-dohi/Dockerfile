@@ -1,4 +1,7 @@
-FROM node:22
+FROM node:22-slim
+
+# Update and install security patches
+RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
